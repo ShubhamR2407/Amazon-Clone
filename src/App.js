@@ -1,24 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Homepage from "./Homepage";
+import Login from "./Login";
+import Checkout from "./Checkout";
+import { useStateValue } from "./StateProvider";
+import { useEffect } from "react";
+import { auth } from "./Firebase";
 
 function App() {
+  const [{ user }, dispatch] = useStateValue();
+
+  // useEffect is PowerFUll
+  //useEffect hook - Piece of code that runs based on a given condition
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        //User is logged in
+        dispatch({
+          type: "SET_USER",
+          user: authUser
+        })
+      } else {
+        //User is logged out
+        dispatch({
+          type:"SET_USER",
+          user: null
+        })
+      }
+    });
+
+    return () => {
+      //any cleanup operations go in here
+      unsubscribe();
+    }
+  }, []);
+
+  console.log("user is >>>>>",user);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="app">
+        <Routes>
+          <Route path="/checkout" element={<Checkout />} />
+
+          <Route path="/login" element={<Login />} />
+
+          <Route path="/" element={<Homepage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
